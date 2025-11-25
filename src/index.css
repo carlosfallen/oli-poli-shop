@@ -1,0 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;800&family=Manrope:wght@300;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #F4F4F0;
+  color: #111111;
+  overflow-x: hidden;
+}
+
+html.lenis {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto;
+}
+
+.stroke-text {
+  -webkit-text-stroke: 1px #111;
+  color: transparent;
+}

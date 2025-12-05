@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro check && astro build",
+    "build": "astro build",
+    "type-check": "astro check",
     "preview": "astro preview",
     "astro": "astro",
     "db:init": "wrangler d1 execute oli-poli-db --file=./schema.sql --local",

@@ -64,31 +64,29 @@ import { formatPrice } from '../lib/utils';
   </section>
 
   <script>
-    import { formatPrice } from '../lib/utils';
-
-    interface CartItem {
-      id: string;
-      name: string;
-      price: number;
-      image_url: string;
-      quantity: number;
+    // Função utilitária
+    function formatPrice(price) {
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+      }).format(price);
     }
 
     // Carregar carrinho
-    function loadCart(): CartItem[] {
+    function loadCart() {
       const cartData = localStorage.getItem('cart');
       return cartData ? JSON.parse(cartData) : [];
     }
 
     // Salvar carrinho
-    function saveCart(cart: CartItem[]) {
+    function saveCart(cart) {
       localStorage.setItem('cart', JSON.stringify(cart));
       window.dispatchEvent(new Event('cart-updated'));
       renderCart();
     }
 
     // Atualizar quantidade
-    function updateQuantity(productId: string, newQuantity: number) {
+    function updateQuantity(productId, newQuantity) {
       const cart = loadCart();
       const item = cart.find(item => item.id === productId);
 
@@ -105,7 +103,7 @@ import { formatPrice } from '../lib/utils';
     }
 
     // Remover item
-    function removeItem(productId: string) {
+    function removeItem(productId) {
       const cart = loadCart();
       const newCart = cart.filter(item => item.id !== productId);
       saveCart(newCart);
@@ -186,7 +184,7 @@ import { formatPrice } from '../lib/utils';
         // Adicionar event listeners
         cartItemsContainer.querySelectorAll('[data-action]').forEach(button => {
           button.addEventListener('click', (e) => {
-            const target = e.currentTarget as HTMLElement;
+            const target = e.currentTarget;
             const action = target.dataset.action;
             const productId = target.dataset.id;
 

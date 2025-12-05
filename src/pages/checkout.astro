@@ -101,7 +101,27 @@ const whatsapp = settingsResults[0]?.value || '5511999999999';
   </section>
 
   <script define:vars={{ whatsapp }}>
-    import { formatPrice, calculateTotal, generateWhatsAppLink, generateOrderId } from '../lib/utils';
+    // Funções utilitárias
+    function formatPrice(price) {
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+      }).format(price);
+    }
+
+    function calculateTotal(cart) {
+      return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    }
+
+    function generateWhatsAppLink(phone, order) {
+      const itemsList = order.items
+        .map(item => `${item.quantity}x ${item.name} - ${formatPrice(item.price * item.quantity)}`)
+        .join('\n');
+
+      const message = `*Novo Pedido #${order.id}*\n\n*Itens:*\n${itemsList}\n\n*Total:* ${formatPrice(order.total)}\n\nObrigado por comprar na Oli Poli Shop! 🎉`;
+
+      return `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+    }
 
     // Carregar carrinho
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -144,7 +164,7 @@ const whatsapp = settingsResults[0]?.value || '5511999999999';
       };
 
       try {
-        const response = await fetch('/api/orders', {
+        const response = await fetch(`${window.location.origin}/api/orders`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

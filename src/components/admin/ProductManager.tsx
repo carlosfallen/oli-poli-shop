@@ -8,14 +8,14 @@ export default function ProductManager() {
   const [isModalOpen, setIsModalOpen] = createSignal(false);
   const [editingProduct, setEditingProduct] = createSignal<Product | null>(null);
 
-  async function fetchProducts() {
+  async function fetchProducts(): Promise<Product[]> {
     const response = await fetch('/api/products');
-    return response.json();
+    return response.json() as Promise<Product[]>;
   }
 
-  async function fetchCategories() {
+  async function fetchCategories(): Promise<Category[]> {
     const response = await fetch('/api/categories');
-    return response.json();
+    return response.json() as Promise<Category[]>;
   }
 
   async function handleSubmit(e: Event) {

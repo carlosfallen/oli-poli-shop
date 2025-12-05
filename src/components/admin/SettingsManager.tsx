@@ -5,9 +5,9 @@ export default function SettingsManager() {
   const [settings, { refetch }] = createResource<Settings>(fetchSettings);
   const [isSaving, setIsSaving] = createSignal(false);
 
-  async function fetchSettings() {
+  async function fetchSettings(): Promise<Settings> {
     const response = await fetch('/api/settings');
-    return response.json();
+    return response.json() as Promise<Settings>;
   }
 
   async function handleSubmit(e: Event) {

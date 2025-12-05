@@ -33,7 +33,7 @@ export const GET: APIRoute = async ({ locals }) => {
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const { DB } = locals.runtime.env;
-    const body = await request.json();
+    const body = await request.json() as any;
     const { name, phone, address, items, total, delivery_date, observations } = body;
 
     const id = generateOrderId();

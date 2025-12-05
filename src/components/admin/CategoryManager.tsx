@@ -6,9 +6,9 @@ export default function CategoryManager() {
   const [isModalOpen, setIsModalOpen] = createSignal(false);
   const [editingCategory, setEditingCategory] = createSignal<Category | null>(null);
 
-  async function fetchCategories() {
+  async function fetchCategories(): Promise<Category[]> {
     const response = await fetch('/api/categories');
-    return response.json();
+    return response.json() as Promise<Category[]>;
   }
 
   async function handleSubmit(e: Event) {

@@ -7,9 +7,9 @@ export default function OrderManager() {
   const [selectedOrder, setSelectedOrder] = createSignal<Order | null>(null);
   const [statusFilter, setStatusFilter] = createSignal<OrderStatus | 'all'>('all');
 
-  async function fetchOrders() {
+  async function fetchOrders(): Promise<Order[]> {
     const response = await fetch('/api/orders');
-    return response.json();
+    return response.json() as Promise<Order[]>;
   }
 
   async function updateOrderStatus(id: string, status: OrderStatus) {

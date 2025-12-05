@@ -1,0 +1,234 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import { formatPrice } from '../lib/utils';
+---
+
+<MainLayout title="Carrinho" description="Seu carrinho de compras">
+  <section class="py-12 bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <div class="container-custom max-w-4xl">
+      <h1 class="text-4xl font-bold mb-8 dark:text-white">Seu Carrinho</h1>
+
+      <!-- Carrinho vazio -->
+      <div id="empty-cart" class="hidden text-center py-16">
+        <svg class="w-24 h-24 mx-auto text-gray-400 dark:text-gray-500 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+        </svg>
+        <h2 class="text-2xl font-bold mb-4 dark:text-white">Seu carrinho está vazio</h2>
+        <p class="text-gray-600 dark:text-gray-300 mb-8">Adicione produtos para começar suas compras!</p>
+        <a href="/loja" class="btn-accent inline-block">
+          Ir para a Loja
+        </a>
+      </div>
+
+      <!-- Carrinho com itens -->
+      <div id="cart-with-items" class="hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <!-- Lista de itens -->
+          <div class="lg:col-span-2">
+            <div id="cart-items" class="space-y-4">
+              <!-- Será preenchido via JavaScript -->
+            </div>
+          </div>
+
+          <!-- Resumo do pedido -->
+          <div>
+            <div class="card p-6 sticky top-6">
+              <h2 class="text-xl font-bold mb-4 dark:text-white">Resumo</h2>
+              <div class="space-y-3 mb-4">
+                <div class="flex justify-between text-gray-600 dark:text-gray-300">
+                  <span>Subtotal:</span>
+                  <span id="subtotal">R$ 0,00</span>
+                </div>
+                <div class="flex justify-between text-gray-600 dark:text-gray-300">
+                  <span>Itens:</span>
+                  <span id="total-items">0</span>
+                </div>
+              </div>
+              <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mb-6">
+                <div class="flex justify-between text-xl font-bold">
+                  <span class="dark:text-white">Total:</span>
+                  <span id="total" class="text-primary-600 dark:text-primary-400">R$ 0,00</span>
+                </div>
+              </div>
+              <a href="/checkout" class="btn-accent w-full text-center block">
+                Finalizar Pedido
+              </a>
+              <a href="/loja" class="btn-secondary w-full text-center block mt-3">
+                Continuar Comprando
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    import { formatPrice } from '../lib/utils';
+
+    interface CartItem {
+      id: string;
+      name: string;
+      price: number;
+      image_url: string;
+      quantity: number;
+    }
+
+    // Carregar carrinho
+    function loadCart(): CartItem[] {
+      const cartData = localStorage.getItem('cart');
+      return cartData ? JSON.parse(cartData) : [];
+    }
+
+    // Salvar carrinho
+    function saveCart(cart: CartItem[]) {
+      localStorage.setItem('cart', JSON.stringify(cart));
+      window.dispatchEvent(new Event('cart-updated'));
+      renderCart();
+    }
+
+    // Atualizar quantidade
+    function updateQuantity(productId: string, newQuantity: number) {
+      const cart = loadCart();
+      const item = cart.find(item => item.id === productId);
+
+      if (item) {
+        if (newQuantity <= 0) {
+          // Remover item
+          const newCart = cart.filter(item => item.id !== productId);
+          saveCart(newCart);
+        } else {
+          item.quantity = newQuantity;
+          saveCart(cart);
+        }
+      }
+    }
+
+    // Remover item
+    function removeItem(productId: string) {
+      const cart = loadCart();
+      const newCart = cart.filter(item => item.id !== productId);
+      saveCart(newCart);
+    }
+
+    // Renderizar carrinho
+    function renderCart() {
+      const cart = loadCart();
+      const emptyCart = document.getElementById('empty-cart');
+      const cartWithItems = document.getElementById('cart-with-items');
+      const cartItemsContainer = document.getElementById('cart-items');
+
+      if (cart.length === 0) {
+        emptyCart?.classList.remove('hidden');
+        cartWithItems?.classList.add('hidden');
+        return;
+      }
+
+      emptyCart?.classList.add('hidden');
+      cartWithItems?.classList.remove('hidden');
+
+      // Renderizar itens
+      if (cartItemsContainer) {
+        cartItemsContainer.innerHTML = '';
+
+        cart.forEach(item => {
+          const itemDiv = document.createElement('div');
+          itemDiv.className = 'card p-4 flex items-center gap-4';
+          itemDiv.innerHTML = `
+            <img
+              src="${item.image_url}"
+              alt="${item.name}"
+              class="w-24 h-24 object-cover rounded-lg"
+            />
+            <div class="flex-1">
+              <h3 class="font-bold text-lg dark:text-white">${item.name}</h3>
+              <p class="text-primary-600 dark:text-primary-400 font-bold mt-1">
+                ${formatPrice(item.price)}
+              </p>
+            </div>
+            <div class="flex items-center gap-3">
+              <button
+                data-action="decrease"
+                data-id="${item.id}"
+                class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center justify-center transition-colors"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                </svg>
+              </button>
+              <span class="w-12 text-center font-semibold dark:text-white">${item.quantity}</span>
+              <button
+                data-action="increase"
+                data-id="${item.id}"
+                class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center justify-center transition-colors"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"></path>
+                </svg>
+              </button>
+            </div>
+            <div class="text-right">
+              <p class="font-bold text-lg dark:text-white">
+                ${formatPrice(item.price * item.quantity)}
+              </p>
+              <button
+                data-action="remove"
+                data-id="${item.id}"
+                class="text-sm text-red-600 dark:text-red-400 hover:underline mt-1"
+              >
+                Remover
+              </button>
+            </div>
+          `;
+          cartItemsContainer.appendChild(itemDiv);
+        });
+
+        // Adicionar event listeners
+        cartItemsContainer.querySelectorAll('[data-action]').forEach(button => {
+          button.addEventListener('click', (e) => {
+            const target = e.currentTarget as HTMLElement;
+            const action = target.dataset.action;
+            const productId = target.dataset.id;
+
+            if (!productId) return;
+
+            const item = cart.find(i => i.id === productId);
+            if (!item) return;
+
+            switch (action) {
+              case 'increase':
+                updateQuantity(productId, item.quantity + 1);
+                break;
+              case 'decrease':
+                updateQuantity(productId, item.quantity - 1);
+                break;
+              case 'remove':
+                if (confirm('Deseja remover este item do carrinho?')) {
+                  removeItem(productId);
+                }
+                break;
+            }
+          });
+        });
+      }
+
+      // Atualizar resumo
+      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+      const subtotalEl = document.getElementById('subtotal');
+      const totalItemsEl = document.getElementById('total-items');
+      const totalEl = document.getElementById('total');
+
+      if (subtotalEl) subtotalEl.textContent = formatPrice(subtotal);
+      if (totalItemsEl) totalItemsEl.textContent = totalItems.toString();
+      if (totalEl) totalEl.textContent = formatPrice(subtotal);
+    }
+
+    // Inicializar
+    renderCart();
+
+    // Atualizar quando o carrinho mudar
+    window.addEventListener('cart-updated', renderCart);
+  </script>
+</MainLayout>

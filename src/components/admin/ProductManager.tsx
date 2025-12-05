@@ -9,12 +9,12 @@ export default function ProductManager() {
   const [editingProduct, setEditingProduct] = createSignal<Product | null>(null);
 
   async function fetchProducts(): Promise<Product[]> {
-    const response = await fetch('/api/products');
+    const response = await fetch(`${window.location.origin}/api/products`);
     return response.json() as Promise<Product[]>;
   }
 
   async function fetchCategories(): Promise<Category[]> {
-    const response = await fetch('/api/categories');
+    const response = await fetch(`${window.location.origin}/api/categories`);
     return response.json() as Promise<Category[]>;
   }
 
@@ -35,7 +35,7 @@ export default function ProductManager() {
     };
 
     const editing = editingProduct();
-    const url = editing ? `/api/products/${editing.id}` : '/api/products';
+    const url = editing ? `${window.location.origin}/api/products/${editing.id}` : `${window.location.origin}/api/products`;
     const method = editing ? 'PUT' : 'POST';
 
     try {
@@ -61,7 +61,7 @@ export default function ProductManager() {
     if (!confirm('Tem certeza que deseja excluir este produto?')) return;
 
     try {
-      const response = await fetch(`/api/products/${id}`, {
+      const response = await fetch(`${window.location.origin}/api/products/${id}`, {
         method: 'DELETE',
       });
 

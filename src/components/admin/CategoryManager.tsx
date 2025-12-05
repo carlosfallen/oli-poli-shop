@@ -7,7 +7,7 @@ export default function CategoryManager() {
   const [editingCategory, setEditingCategory] = createSignal<Category | null>(null);
 
   async function fetchCategories(): Promise<Category[]> {
-    const response = await fetch('/api/categories');
+    const response = await fetch(`${window.location.origin}/api/categories`);
     return response.json() as Promise<Category[]>;
   }
 
@@ -23,7 +23,7 @@ export default function CategoryManager() {
     };
 
     const editing = editingCategory();
-    const url = editing ? `/api/categories/${editing.id}` : '/api/categories';
+    const url = editing ? `${window.location.origin}/api/categories/${editing.id}` : `${window.location.origin}/api/categories`;
     const method = editing ? 'PUT' : 'POST';
 
     try {
@@ -49,7 +49,7 @@ export default function CategoryManager() {
     if (!confirm('Tem certeza que deseja excluir esta categoria?')) return;
 
     try {
-      const response = await fetch(`/api/categories/${id}`, {
+      const response = await fetch(`${window.location.origin}/api/categories/${id}`, {
         method: 'DELETE',
       });
 

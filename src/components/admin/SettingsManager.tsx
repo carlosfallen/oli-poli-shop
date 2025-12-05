@@ -6,7 +6,7 @@ export default function SettingsManager() {
   const [isSaving, setIsSaving] = createSignal(false);
 
   async function fetchSettings(): Promise<Settings> {
-    const response = await fetch('/api/settings');
+    const response = await fetch(`${window.location.origin}/api/settings`);
     return response.json() as Promise<Settings>;
   }
 
@@ -28,7 +28,7 @@ export default function SettingsManager() {
     };
 
     try {
-      const response = await fetch('/api/settings', {
+      const response = await fetch(`${window.location.origin}/api/settings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),

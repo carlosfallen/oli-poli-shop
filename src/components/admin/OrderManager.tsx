@@ -8,13 +8,13 @@ export default function OrderManager() {
   const [statusFilter, setStatusFilter] = createSignal<OrderStatus | 'all'>('all');
 
   async function fetchOrders(): Promise<Order[]> {
-    const response = await fetch('/api/orders');
+    const response = await fetch(`${window.location.origin}/api/orders`);
     return response.json() as Promise<Order[]>;
   }
 
   async function updateOrderStatus(id: string, status: OrderStatus) {
     try {
-      const response = await fetch(`/api/orders/${id}`, {
+      const response = await fetch(`${window.location.origin}/api/orders/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),

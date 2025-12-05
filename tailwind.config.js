@@ -1,24 +1,26 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ['./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}'],
+  darkMode: 'class',
   theme: {
     extend: {
-      fontFamily: {
-        sans: ['Manrope', 'sans-serif'],
-        display: ['Inter', 'sans-serif'],
-      },
       colors: {
-        'oli-black': '#111111',
-        'oli-white': '#F4F4F0',
-        'oli-orange': '#FF5500',
-        'oli-gray': '#888888',
+        primary: {
+          50: '#fef2f2',
+          100: '#fee2e2',
+          200: '#fecaca',
+          300: '#fca5a5',
+          400: '#f87171',
+          500: '#ef4444',
+          600: '#dc2626',
+          700: '#b91c1c',
+          800: '#991b1b',
+          900: '#7f1d1d',
+        },
       },
-      backgroundImage: {
-        'noise': "url('https://grainy-gradients.vercel.app/noise.svg')",
-      }
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
     },
   },
   plugins: [],

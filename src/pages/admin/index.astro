@@ -1,0 +1,179 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { formatPrice, formatDate, getOrderStatusLabel, getOrderStatusColor } from '../../lib/utils';
+
+const { DB } = Astro.locals.runtime.env;
+
+// Estatísticas
+const totalProducts = await DB.prepare('SELECT COUNT(*) as count FROM products').first();
+const totalOrders = await DB.prepare('SELECT COUNT(*) as count FROM orders').first();
+const totalRevenue = await DB.prepare('SELECT SUM(total) as total FROM orders WHERE status != ?').bind('cancelled').first();
+
+// Pedidos por status
+const ordersByStatus = await DB.prepare(`
+  SELECT status, COUNT(*) as count
+  FROM orders
+  GROUP BY status
+`).all();
+
+// Pedidos recentes
+const { results: recentOrders } = await DB.prepare(`
+  SELECT * FROM orders
+  ORDER BY created_at DESC
+  LIMIT 5
+`).all();
+
+// Produtos com baixo estoque
+const { results: lowStockProducts } = await DB.prepare(`
+  SELECT * FROM products
+  WHERE stock < 5 AND active = 1
+  ORDER BY stock ASC
+  LIMIT 5
+`).all();
+---
+
+<AdminLayout title="Dashboard">
+  <!-- Cards de Estatísticas -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="card p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Total de Produtos</p>
+          <p class="text-3xl font-bold">{totalProducts.count}</p>
+        </div>
+        <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="card p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Total de Pedidos</p>
+          <p class="text-3xl font-bold">{totalOrders.count}</p>
+        </div>
+        <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="card p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Faturamento Total</p>
+          <p class="text-3xl font-bold">{formatPrice(totalRevenue.total || 0)}</p>
+        </div>
+        <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <!-- Pedidos por Status -->
+    <div class="card p-6">
+      <h2 class="text-xl font-bold mb-4">Pedidos por Status</h2>
+      <div class="space-y-3">
+        {ordersByStatus.results.map((item: any) => (
+          <div class="flex items-center justify-between">
+            <span class={`px-3 py-1 rounded-full text-sm font-medium ${getOrderStatusColor(item.status)}`}>
+              {getOrderStatusLabel(item.status)}
+            </span>
+            <span class="font-bold">{item.count}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- Produtos com Baixo Estoque -->
+    <div class="card p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold">Produtos com Baixo Estoque</h2>
+        <a href="/admin/produtos" class="text-primary-600 hover:text-primary-700 text-sm">
+          Ver todos
+        </a>
+      </div>
+      {lowStockProducts.length === 0 ? (
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Nenhum produto com estoque baixo</p>
+      ) : (
+        <div class="space-y-3">
+          {lowStockProducts.map((product: any) => (
+            <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+              <div class="flex-1">
+                <p class="font-medium">{product.name}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{product.category}</p>
+              </div>
+              <span class={`px-2 py-1 rounded text-xs font-medium ${
+                product.stock === 0
+                  ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                  : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+              }`}>
+                {product.stock} em estoque
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+
+  <!-- Pedidos Recentes -->
+  <div class="card p-6">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-xl font-bold">Pedidos Recentes</h2>
+      <a href="/admin/pedidos" class="text-primary-600 hover:text-primary-700">
+        Ver todos
+      </a>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-gray-200 dark:border-gray-700">
+            <th class="text-left py-3 px-4 font-semibold">ID</th>
+            <th class="text-left py-3 px-4 font-semibold">Cliente</th>
+            <th class="text-left py-3 px-4 font-semibold">Data</th>
+            <th class="text-left py-3 px-4 font-semibold">Total</th>
+            <th class="text-left py-3 px-4 font-semibold">Status</th>
+            <th class="text-left py-3 px-4 font-semibold">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {recentOrders.map((order: any) => (
+            <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+              <td class="py-3 px-4 font-mono text-sm">#{order.id.slice(0, 8)}</td>
+              <td class="py-3 px-4">{order.name}</td>
+              <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
+                {formatDate(order.created_at)}
+              </td>
+              <td class="py-3 px-4 font-bold text-primary-600">
+                {formatPrice(order.total)}
+              </td>
+              <td class="py-3 px-4">
+                <span class={`px-2 py-1 rounded-full text-xs font-medium ${getOrderStatusColor(order.status)}`}>
+                  {getOrderStatusLabel(order.status)}
+                </span>
+              </td>
+              <td class="py-3 px-4">
+                <a
+                  href={`/admin/pedidos?id=${order.id}`}
+                  class="text-primary-600 hover:text-primary-700"
+                >
+                  Ver
+                </a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</AdminLayout>

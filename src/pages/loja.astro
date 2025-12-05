@@ -1,0 +1,118 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import AddToCart from '../components/AddToCart';
+import type { Product } from '../lib/types';
+import { formatPrice } from '../lib/utils';
+
+const { DB } = Astro.locals.runtime.env;
+const categoryFilter = Astro.url.searchParams.get('categoria');
+
+// Buscar categorias
+const { results: categories } = await DB.prepare(
+  'SELECT * FROM categories ORDER BY name ASC'
+).all();
+
+// Buscar produtos
+let query = 'SELECT * FROM products WHERE active = 1';
+const params: any[] = [];
+
+if (categoryFilter) {
+  query += ' AND category = ?';
+  params.push(categoryFilter);
+}
+
+query += ' ORDER BY created_at DESC';
+
+const { results: products } = await DB.prepare(query)
+  .bind(...params)
+  .all() as { results: Product[] };
+---
+
+<MainLayout title="Loja" description="Explore nossa coleção completa de brinquedos">
+  <section class="py-12 bg-gray-50 dark:bg-gray-900">
+    <div class="container-custom">
+      <h1 class="text-4xl font-bold mb-8">Nossa Loja</h1>
+
+      <!-- Filtros -->
+      <div class="mb-8">
+        <h2 class="text-lg font-semibold mb-4">Categorias</h2>
+        <div class="flex flex-wrap gap-2">
+          <a
+            href="/loja"
+            class={`px-4 py-2 rounded-lg transition-colors ${
+              !categoryFilter
+                ? 'bg-primary-600 text-white'
+                : 'bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
+            }`}
+          >
+            Todas
+          </a>
+          {categories.map((category: any) => (
+            <a
+              href={`/loja?categoria=${category.id}`}
+              class={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                categoryFilter === category.id
+                  ? 'bg-primary-600 text-white'
+                  : 'bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+            >
+              <span>{category.icon}</span>
+              <span>{category.name}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <!-- Produtos -->
+      {products.length === 0 ? (
+        <div class="text-center py-12">
+          <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+          </svg>
+          <p class="text-gray-500">Nenhum produto encontrado nesta categoria.</p>
+          <a href="/loja" class="btn-primary mt-4 inline-block">
+            Ver Todos os Produtos
+          </a>
+        </div>
+      ) : (
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {products.map((product) => (
+            <div class="card overflow-hidden">
+              <a href={`/produto/${product.id}`} class="block">
+                <div class="aspect-square bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                  <img
+                    src={product.image_url}
+                    alt={product.name}
+                    class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+              </a>
+              <div class="p-4">
+                <span class="text-xs text-gray-500 dark:text-gray-400 uppercase">{product.category}</span>
+                <a href={`/produto/${product.id}`}>
+                  <h3 class="font-bold text-lg mt-1 mb-2 hover:text-primary-600 transition-colors">
+                    {product.name}
+                  </h3>
+                </a>
+                <p class="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">
+                  {product.description}
+                </p>
+                <div class="mb-3">
+                  <span class="text-2xl font-bold text-primary-600">
+                    {formatPrice(product.price)}
+                  </span>
+                  {product.stock > 0 && (
+                    <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">
+                      {product.stock} em estoque
+                    </span>
+                  )}
+                </div>
+                <AddToCart product={product} client:load />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+</MainLayout>

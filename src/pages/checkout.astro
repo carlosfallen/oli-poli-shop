@@ -14,16 +14,16 @@ const whatsapp = settingsResults[0]?.value || '5511999999999';
 <MainLayout title="Checkout" description="Finalize seu pedido">
   <section class="py-12 bg-gray-50 dark:bg-gray-900 min-h-screen">
     <div class="container-custom max-w-4xl">
-      <h1 class="text-4xl font-bold mb-8">Finalizar Pedido</h1>
+      <h1 class="text-4xl font-bold mb-8 dark:text-white">Finalizar Pedido</h1>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Formulário -->
         <div class="lg:col-span-2">
           <div class="card p-6">
-            <h2 class="text-2xl font-bold mb-6">Seus Dados</h2>
+            <h2 class="text-2xl font-bold mb-6 dark:text-white">Seus Dados</h2>
             <form id="checkout-form" class="space-y-4">
               <div>
-                <label class="block text-sm font-medium mb-2">Nome Completo *</label>
+                <label class="block text-sm font-medium mb-2 dark:text-white">Nome Completo *</label>
                 <input
                   type="text"
                   name="name"
@@ -34,7 +34,7 @@ const whatsapp = settingsResults[0]?.value || '5511999999999';
               </div>
 
               <div>
-                <label class="block text-sm font-medium mb-2">WhatsApp *</label>
+                <label class="block text-sm font-medium mb-2 dark:text-white">WhatsApp *</label>
                 <input
                   type="tel"
                   name="phone"
@@ -45,7 +45,7 @@ const whatsapp = settingsResults[0]?.value || '5511999999999';
               </div>
 
               <div>
-                <label class="block text-sm font-medium mb-2">Endereço Completo *</label>
+                <label class="block text-sm font-medium mb-2 dark:text-white">Endereço Completo *</label>
                 <textarea
                   name="address"
                   required
@@ -56,7 +56,7 @@ const whatsapp = settingsResults[0]?.value || '5511999999999';
               </div>
 
               <div>
-                <label class="block text-sm font-medium mb-2">Data de Entrega (Opcional)</label>
+                <label class="block text-sm font-medium mb-2 dark:text-white">Data de Entrega (Opcional)</label>
                 <input
                   type="date"
                   name="delivery_date"
@@ -65,7 +65,7 @@ const whatsapp = settingsResults[0]?.value || '5511999999999';
               </div>
 
               <div>
-                <label class="block text-sm font-medium mb-2">Observações (Opcional)</label>
+                <label class="block text-sm font-medium mb-2 dark:text-white">Observações (Opcional)</label>
                 <textarea
                   name="observations"
                   rows="3"
@@ -74,7 +74,7 @@ const whatsapp = settingsResults[0]?.value || '5511999999999';
                 ></textarea>
               </div>
 
-              <button type="submit" class="btn-primary w-full">
+              <button type="submit" class="btn-accent w-full text-lg py-3">
                 Confirmar Pedido
               </button>
             </form>
@@ -84,14 +84,14 @@ const whatsapp = settingsResults[0]?.value || '5511999999999';
         <!-- Resumo do Pedido -->
         <div>
           <div class="card p-6 sticky top-6">
-            <h2 class="text-xl font-bold mb-4">Resumo do Pedido</h2>
-            <div id="cart-summary" class="space-y-3 mb-4">
+            <h2 class="text-xl font-bold mb-4 dark:text-white">Resumo do Pedido</h2>
+            <div id="cart-summary" class="space-y-3 mb-4 dark:text-gray-300">
               <!-- Será preenchido via JavaScript -->
             </div>
             <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
               <div class="flex justify-between text-xl font-bold">
-                <span>Total:</span>
-                <span id="cart-total" class="text-primary-600">R$ 0,00</span>
+                <span class="dark:text-white">Total:</span>
+                <span id="cart-total" class="text-primary-600 dark:text-primary-400">R$ 0,00</span>
               </div>
             </div>
           </div>

@@ -31,18 +31,18 @@ const { results: products } = await DB.prepare(query)
 <MainLayout title="Loja" description="Explore nossa coleção completa de brinquedos">
   <section class="py-12 bg-gray-50 dark:bg-gray-900">
     <div class="container-custom">
-      <h1 class="text-4xl font-bold mb-8">Nossa Loja</h1>
+      <h1 class="text-4xl font-bold mb-8 dark:text-white">Nossa Loja</h1>
 
       <!-- Filtros -->
       <div class="mb-8">
-        <h2 class="text-lg font-semibold mb-4">Categorias</h2>
+        <h2 class="text-lg font-semibold mb-4 dark:text-white">Categorias</h2>
         <div class="flex flex-wrap gap-2">
           <a
             href="/loja"
-            class={`px-4 py-2 rounded-lg transition-colors ${
+            class={`px-4 py-2 rounded-lg transition-colors font-medium ${
               !categoryFilter
-                ? 'bg-primary-600 text-white'
-                : 'bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
+                ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/50'
+                : 'bg-white dark:bg-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
             }`}
           >
             Todas
@@ -50,10 +50,10 @@ const { results: products } = await DB.prepare(query)
           {categories.map((category: any) => (
             <a
               href={`/loja?categoria=${category.id}`}
-              class={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+              class={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 font-medium ${
                 categoryFilter === category.id
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/50'
+                  : 'bg-white dark:bg-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
             >
               <span>{category.icon}</span>
@@ -66,18 +66,18 @@ const { results: products } = await DB.prepare(query)
       <!-- Produtos -->
       {products.length === 0 ? (
         <div class="text-center py-12">
-          <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
           </svg>
-          <p class="text-gray-500">Nenhum produto encontrado nesta categoria.</p>
-          <a href="/loja" class="btn-primary mt-4 inline-block">
+          <p class="text-gray-500 dark:text-gray-400">Nenhum produto encontrado nesta categoria.</p>
+          <a href="/loja" class="btn-accent mt-4 inline-block">
             Ver Todos os Produtos
           </a>
         </div>
       ) : (
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {products.map((product) => (
-            <div class="card overflow-hidden">
+            <div class="card-hover overflow-hidden">
               <a href={`/produto/${product.id}`} class="block">
                 <div class="aspect-square bg-gray-200 dark:bg-gray-700 overflow-hidden">
                   <img
@@ -88,17 +88,17 @@ const { results: products } = await DB.prepare(query)
                 </div>
               </a>
               <div class="p-4">
-                <span class="text-xs text-gray-500 dark:text-gray-400 uppercase">{product.category}</span>
+                <span class="text-xs text-primary-600 dark:text-primary-400 uppercase font-semibold">{product.category}</span>
                 <a href={`/produto/${product.id}`}>
-                  <h3 class="font-bold text-lg mt-1 mb-2 hover:text-primary-600 transition-colors">
+                  <h3 class="font-bold text-lg mt-1 mb-2 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
                     {product.name}
                   </h3>
                 </a>
-                <p class="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">
+                <p class="text-gray-600 dark:text-gray-300 text-sm mb-3 line-clamp-2">
                   {product.description}
                 </p>
                 <div class="mb-3">
-                  <span class="text-2xl font-bold text-primary-600">
+                  <span class="text-2xl font-bold text-primary-600 dark:text-primary-400">
                     {formatPrice(product.price)}
                   </span>
                   {product.stock > 0 && (

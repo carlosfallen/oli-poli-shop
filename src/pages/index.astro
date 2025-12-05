@@ -17,20 +17,21 @@ const { results: categories } = await DB.prepare(
 
 <MainLayout title="Início" description="A melhor loja de brinquedos da região!">
   <!-- Hero Section -->
-  <section class="relative bg-gradient-to-r from-primary-500 to-primary-700 text-white">
-    <div class="container-custom py-20 md:py-32">
+  <section class="relative bg-gradient-to-br from-primary-600 via-primary-500 to-primary-700 text-white overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-secondary-400/10 to-transparent"></div>
+    <div class="container-custom py-20 md:py-32 relative z-10">
       <div class="max-w-3xl">
         <h1 class="text-4xl md:text-6xl font-bold mb-6">
-          Brinquedos que trazem alegria
+          Brinquedos que trazem <span class="text-secondary-300">alegria</span>
         </h1>
-        <p class="text-xl md:text-2xl mb-8 text-primary-100">
+        <p class="text-xl md:text-2xl mb-8 text-white/90">
           Descubra o mundo mágico dos brinquedos na Oli Poli Shop
         </p>
         <div class="flex flex-wrap gap-4">
-          <a href="/loja" class="btn bg-white text-primary-600 hover:bg-gray-100 text-lg px-8 py-3">
+          <a href="/loja" class="btn bg-secondary-400 text-gray-900 hover:bg-secondary-500 text-lg px-8 py-3 font-bold shadow-xl">
             Ver Produtos
           </a>
-          <a href="#sobre" class="btn bg-primary-600 border-2 border-white text-white hover:bg-primary-800 text-lg px-8 py-3">
+          <a href="#sobre" class="btn bg-white/20 backdrop-blur border-2 border-white text-white hover:bg-white/30 text-lg px-8 py-3">
             Saiba Mais
           </a>
         </div>
@@ -61,7 +62,7 @@ const { results: categories } = await DB.prepare(
     <div class="container-custom">
       <div class="text-center mb-12">
         <h2 class="text-3xl font-bold mb-4">Produtos em Destaque</h2>
-        <p class="text-gray-600 dark:text-gray-400">Os brinquedos mais amados pelas crianças</p>
+        <p class="text-gray-600 dark:text-gray-300">Os brinquedos mais amados pelas crianças</p>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {featuredProducts.map((product) => (
@@ -74,19 +75,19 @@ const { results: categories } = await DB.prepare(
               />
             </div>
             <div class="p-6">
-              <span class="text-sm text-gray-500 dark:text-gray-400">{product.category}</span>
-              <h3 class="font-bold text-xl mt-1 mb-2">{product.name}</h3>
-              <p class="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
+              <span class="text-sm text-primary-600 dark:text-primary-400 font-medium">{product.category}</span>
+              <h3 class="font-bold text-xl mt-1 mb-2 dark:text-white">{product.name}</h3>
+              <p class="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">
                 {product.description}
               </p>
               <div class="flex items-center justify-between">
-                <span class="text-2xl font-bold text-primary-600">
+                <span class="text-2xl font-bold text-primary-600 dark:text-primary-400">
                   {new Intl.NumberFormat('pt-BR', {
                     style: 'currency',
                     currency: 'BRL',
                   }).format(product.price)}
                 </span>
-                <a href={`/produto/${product.id}`} class="btn-primary">
+                <a href={`/produto/${product.id}`} class="btn-accent">
                   Ver Detalhes
                 </a>
               </div>
@@ -95,7 +96,7 @@ const { results: categories } = await DB.prepare(
         ))}
       </div>
       <div class="text-center mt-12">
-        <a href="/loja" class="btn-primary text-lg px-8 py-3">
+        <a href="/loja" class="btn-accent text-lg px-8 py-3">
           Ver Todos os Produtos
         </a>
       </div>
@@ -106,8 +107,8 @@ const { results: categories } = await DB.prepare(
   <section id="sobre" class="py-16 bg-gray-50 dark:bg-gray-900">
     <div class="container-custom">
       <div class="max-w-3xl mx-auto text-center">
-        <h2 class="text-3xl font-bold mb-6">Sobre a Oli Poli Shop</h2>
-        <p class="text-lg text-gray-600 dark:text-gray-400 mb-8">
+        <h2 class="text-3xl font-bold mb-6 dark:text-white">Sobre a Oli Poli Shop</h2>
+        <p class="text-lg text-gray-600 dark:text-gray-300 mb-8">
           Somos uma loja especializada em brinquedos de qualidade que proporcionam
           diversão e aprendizado para crianças de todas as idades. Nossa missão é
           trazer alegria e momentos especiais para as famílias.
@@ -119,38 +120,38 @@ const { results: categories } = await DB.prepare(
   <!-- Benefícios -->
   <section class="py-16">
     <div class="container-custom">
-      <h2 class="text-3xl font-bold text-center mb-12">Por que escolher a Oli Poli?</h2>
+      <h2 class="text-3xl font-bold text-center mb-12 dark:text-white">Por que escolher a Oli Poli?</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div class="text-center">
           <div class="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-8 h-8 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
           </div>
-          <h3 class="font-bold text-xl mb-2">Qualidade Garantida</h3>
-          <p class="text-gray-600 dark:text-gray-400">
+          <h3 class="font-bold text-xl mb-2 dark:text-white">Qualidade Garantida</h3>
+          <p class="text-gray-600 dark:text-gray-300">
             Todos os nossos produtos são cuidadosamente selecionados
           </p>
         </div>
         <div class="text-center">
           <div class="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-8 h-8 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
           </div>
-          <h3 class="font-bold text-xl mb-2">Entrega Rápida</h3>
-          <p class="text-gray-600 dark:text-gray-400">
+          <h3 class="font-bold text-xl mb-2 dark:text-white">Entrega Rápida</h3>
+          <p class="text-gray-600 dark:text-gray-300">
             Receba seus produtos com rapidez e segurança
           </p>
         </div>
         <div class="text-center">
           <div class="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-8 h-8 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
             </svg>
           </div>
-          <h3 class="font-bold text-xl mb-2">Atendimento Especial</h3>
-          <p class="text-gray-600 dark:text-gray-400">
+          <h3 class="font-bold text-xl mb-2 dark:text-white">Atendimento Especial</h3>
+          <p class="text-gray-600 dark:text-gray-300">
             Equipe dedicada para ajudar você
           </p>
         </div>
@@ -164,10 +165,10 @@ const { results: categories } = await DB.prepare(
       <h2 class="text-3xl md:text-4xl font-bold mb-4">
         Pronto para a diversão?
       </h2>
-      <p class="text-xl mb-8 text-primary-100">
+      <p class="text-xl mb-8 text-white/90">
         Explore nossa coleção completa de brinquedos
       </p>
-      <a href="/loja" class="btn bg-white text-primary-600 hover:bg-gray-100 text-lg px-8 py-3 inline-block">
+      <a href="/loja" class="btn bg-secondary-400 text-gray-900 hover:bg-secondary-500 text-lg px-8 py-3 inline-block font-bold shadow-xl">
         Visitar a Loja
       </a>
     </div>

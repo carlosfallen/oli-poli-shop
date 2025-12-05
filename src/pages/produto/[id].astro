@@ -1,0 +1,142 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import AddToCart from '../../components/AddToCart';
+import type { Product } from '../../lib/types';
+import { formatPrice } from '../../lib/utils';
+
+const { id } = Astro.params;
+const { DB } = Astro.locals.runtime.env;
+
+const product = await DB.prepare(
+  'SELECT * FROM products WHERE id = ? AND active = 1'
+).bind(id).first() as Product | null;
+
+if (!product) {
+  return Astro.redirect('/loja');
+}
+
+// Produtos relacionados (mesma categoria)
+const { results: relatedProducts } = await DB.prepare(
+  'SELECT * FROM products WHERE category = ? AND id != ? AND active = 1 LIMIT 4'
+).bind(product.category, id).all() as { results: Product[] };
+---
+
+<MainLayout title={product.name} description={product.description}>
+  <section class="py-12">
+    <div class="container-custom">
+      <a href="/loja" class="inline-flex items-center text-primary-600 hover:text-primary-700 mb-6">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Voltar para a loja
+      </a>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <!-- Imagem do Produto -->
+        <div class="aspect-square bg-gray-200 dark:bg-gray-700 rounded-2xl overflow-hidden">
+          <img
+            src={product.image_url}
+            alt={product.name}
+            class="w-full h-full object-cover"
+          />
+        </div>
+
+        <!-- Informações do Produto -->
+        <div>
+          <span class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            {product.category}
+          </span>
+          <h1 class="text-4xl font-bold mt-2 mb-4">{product.name}</h1>
+
+          <div class="flex items-baseline gap-4 mb-6">
+            <span class="text-4xl font-bold text-primary-600">
+              {formatPrice(product.price)}
+            </span>
+            {product.stock > 0 && (
+              <span class="text-green-600 dark:text-green-400 flex items-center gap-1">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                {product.stock} em estoque
+              </span>
+            )}
+            {product.stock === 0 && (
+              <span class="text-red-600 dark:text-red-400">
+                Fora de estoque
+              </span>
+            )}
+          </div>
+
+          <div class="prose dark:prose-invert max-w-none mb-8">
+            <h2 class="text-xl font-semibold mb-3">Descrição</h2>
+            <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+              {product.description}
+            </p>
+          </div>
+
+          {product.stock > 0 && (
+            <div class="mb-8">
+              <AddToCart product={product} client:load />
+            </div>
+          )}
+
+          <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+            <h3 class="font-semibold mb-3">Informações adicionais</h3>
+            <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+              <li class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                Produto de qualidade garantida
+              </li>
+              <li class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                Entrega rápida e segura
+              </li>
+              <li class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                Atendimento personalizado
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Produtos Relacionados -->
+      {relatedProducts.length > 0 && (
+        <div class="mt-16">
+          <h2 class="text-3xl font-bold mb-8">Produtos Relacionados</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {relatedProducts.map((relatedProduct) => (
+              <div class="card overflow-hidden">
+                <a href={`/produto/${relatedProduct.id}`}>
+                  <div class="aspect-square bg-gray-200 dark:bg-gray-700">
+                    <img
+                      src={relatedProduct.image_url}
+                      alt={relatedProduct.name}
+                      class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                </a>
+                <div class="p-4">
+                  <a href={`/produto/${relatedProduct.id}`}>
+                    <h3 class="font-bold hover:text-primary-600 transition-colors">
+                      {relatedProduct.name}
+                    </h3>
+                  </a>
+                  <p class="text-xl font-bold text-primary-600 mt-2">
+                    {formatPrice(relatedProduct.price)}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  </section>
+</MainLayout>

@@ -1,0 +1,185 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+
+const { DB } = Astro.locals.runtime.env;
+
+// Buscar configurações (WhatsApp da loja)
+const { results: settingsResults } = await DB.prepare(
+  'SELECT key, value FROM settings WHERE key = ?'
+).bind('whatsapp').all();
+
+const whatsapp = settingsResults[0]?.value || '5511999999999';
+---
+
+<MainLayout title="Checkout" description="Finalize seu pedido">
+  <section class="py-12 bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <div class="container-custom max-w-4xl">
+      <h1 class="text-4xl font-bold mb-8">Finalizar Pedido</h1>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Formulário -->
+        <div class="lg:col-span-2">
+          <div class="card p-6">
+            <h2 class="text-2xl font-bold mb-6">Seus Dados</h2>
+            <form id="checkout-form" class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium mb-2">Nome Completo *</label>
+                <input
+                  type="text"
+                  name="name"
+                  required
+                  class="input"
+                  placeholder="Seu nome completo"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium mb-2">WhatsApp *</label>
+                <input
+                  type="tel"
+                  name="phone"
+                  required
+                  class="input"
+                  placeholder="(11) 99999-9999"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium mb-2">Endereço Completo *</label>
+                <textarea
+                  name="address"
+                  required
+                  rows="3"
+                  class="input"
+                  placeholder="Rua, número, bairro, cidade, estado"
+                ></textarea>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium mb-2">Data de Entrega (Opcional)</label>
+                <input
+                  type="date"
+                  name="delivery_date"
+                  class="input"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium mb-2">Observações (Opcional)</label>
+                <textarea
+                  name="observations"
+                  rows="3"
+                  class="input"
+                  placeholder="Alguma observação sobre seu pedido?"
+                ></textarea>
+              </div>
+
+              <button type="submit" class="btn-primary w-full">
+                Confirmar Pedido
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Resumo do Pedido -->
+        <div>
+          <div class="card p-6 sticky top-6">
+            <h2 class="text-xl font-bold mb-4">Resumo do Pedido</h2>
+            <div id="cart-summary" class="space-y-3 mb-4">
+              <!-- Será preenchido via JavaScript -->
+            </div>
+            <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+              <div class="flex justify-between text-xl font-bold">
+                <span>Total:</span>
+                <span id="cart-total" class="text-primary-600">R$ 0,00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script define:vars={{ whatsapp }}>
+    import { formatPrice, calculateTotal, generateWhatsAppLink, generateOrderId } from '../lib/utils';
+
+    // Carregar carrinho
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+
+    // Renderizar resumo
+    const cartSummary = document.getElementById('cart-summary');
+    const cartTotal = document.getElementById('cart-total');
+
+    if (cart.length === 0) {
+      window.location.href = '/loja';
+    }
+
+    cart.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'flex justify-between text-sm';
+      div.innerHTML = `
+        <span>${item.quantity}x ${item.name}</span>
+        <span>${formatPrice(item.price * item.quantity)}</span>
+      `;
+      cartSummary.appendChild(div);
+    });
+
+    const total = calculateTotal(cart);
+    cartTotal.textContent = formatPrice(total);
+
+    // Submeter pedido
+    const form = document.getElementById('checkout-form');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      const data = {
+        name: formData.get('name'),
+        phone: formData.get('phone'),
+        address: formData.get('address'),
+        delivery_date: formData.get('delivery_date') || null,
+        observations: formData.get('observations') || null,
+        items: cart,
+        total: total,
+      };
+
+      try {
+        const response = await fetch('/api/orders', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          // Gerar link do WhatsApp
+          const whatsappLink = generateWhatsAppLink(whatsapp, {
+            id: result.id,
+            items: cart,
+            total: total,
+          });
+
+          // Limpar carrinho
+          localStorage.removeItem('cart');
+          window.dispatchEvent(new Event('cart-updated'));
+
+          // Abrir WhatsApp
+          window.open(whatsappLink, '_blank');
+
+          // Redirecionar para página de acompanhamento
+          setTimeout(() => {
+            window.location.href = `/pedido/${result.id}`;
+          }, 1000);
+        } else {
+          alert('Erro ao criar pedido. Tente novamente.');
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+        alert('Erro ao criar pedido. Tente novamente.');
+      }
+    });
+  </script>
+</MainLayout>

@@ -1,0 +1,175 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import type { Product } from '../lib/types';
+
+const { DB } = Astro.locals.runtime.env;
+
+// Buscar produtos em destaque
+const { results: featuredProducts } = await DB.prepare(
+  'SELECT * FROM products WHERE featured = 1 AND active = 1 LIMIT 6'
+).all() as { results: Product[] };
+
+// Buscar categorias
+const { results: categories } = await DB.prepare(
+  'SELECT * FROM categories LIMIT 5'
+).all();
+---
+
+<MainLayout title="Início" description="A melhor loja de brinquedos da região!">
+  <!-- Hero Section -->
+  <section class="relative bg-gradient-to-r from-primary-500 to-primary-700 text-white">
+    <div class="container-custom py-20 md:py-32">
+      <div class="max-w-3xl">
+        <h1 class="text-4xl md:text-6xl font-bold mb-6">
+          Brinquedos que trazem alegria
+        </h1>
+        <p class="text-xl md:text-2xl mb-8 text-primary-100">
+          Descubra o mundo mágico dos brinquedos na Oli Poli Shop
+        </p>
+        <div class="flex flex-wrap gap-4">
+          <a href="/loja" class="btn bg-white text-primary-600 hover:bg-gray-100 text-lg px-8 py-3">
+            Ver Produtos
+          </a>
+          <a href="#sobre" class="btn bg-primary-600 border-2 border-white text-white hover:bg-primary-800 text-lg px-8 py-3">
+            Saiba Mais
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Categorias -->
+  <section class="py-16 bg-gray-50 dark:bg-gray-900">
+    <div class="container-custom">
+      <h2 class="text-3xl font-bold text-center mb-12">Categorias</h2>
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        {categories.map((category: any) => (
+          <a
+            href={`/loja?categoria=${category.id}`}
+            class="card-hover p-6 text-center"
+          >
+            <div class="text-4xl mb-3">{category.icon}</div>
+            <h3 class="font-semibold">{category.name}</h3>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Produtos em Destaque -->
+  <section class="py-16">
+    <div class="container-custom">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-bold mb-4">Produtos em Destaque</h2>
+        <p class="text-gray-600 dark:text-gray-400">Os brinquedos mais amados pelas crianças</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {featuredProducts.map((product) => (
+          <div class="card-hover overflow-hidden">
+            <div class="aspect-square bg-gray-200 dark:bg-gray-700">
+              <img
+                src={product.image_url}
+                alt={product.name}
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <div class="p-6">
+              <span class="text-sm text-gray-500 dark:text-gray-400">{product.category}</span>
+              <h3 class="font-bold text-xl mt-1 mb-2">{product.name}</h3>
+              <p class="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
+                {product.description}
+              </p>
+              <div class="flex items-center justify-between">
+                <span class="text-2xl font-bold text-primary-600">
+                  {new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  }).format(product.price)}
+                </span>
+                <a href={`/produto/${product.id}`} class="btn-primary">
+                  Ver Detalhes
+                </a>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div class="text-center mt-12">
+        <a href="/loja" class="btn-primary text-lg px-8 py-3">
+          Ver Todos os Produtos
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sobre a Loja -->
+  <section id="sobre" class="py-16 bg-gray-50 dark:bg-gray-900">
+    <div class="container-custom">
+      <div class="max-w-3xl mx-auto text-center">
+        <h2 class="text-3xl font-bold mb-6">Sobre a Oli Poli Shop</h2>
+        <p class="text-lg text-gray-600 dark:text-gray-400 mb-8">
+          Somos uma loja especializada em brinquedos de qualidade que proporcionam
+          diversão e aprendizado para crianças de todas as idades. Nossa missão é
+          trazer alegria e momentos especiais para as famílias.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Benefícios -->
+  <section class="py-16">
+    <div class="container-custom">
+      <h2 class="text-3xl font-bold text-center mb-12">Por que escolher a Oli Poli?</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="text-center">
+          <div class="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h3 class="font-bold text-xl mb-2">Qualidade Garantida</h3>
+          <p class="text-gray-600 dark:text-gray-400">
+            Todos os nossos produtos são cuidadosamente selecionados
+          </p>
+        </div>
+        <div class="text-center">
+          <div class="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h3 class="font-bold text-xl mb-2">Entrega Rápida</h3>
+          <p class="text-gray-600 dark:text-gray-400">
+            Receba seus produtos com rapidez e segurança
+          </p>
+        </div>
+        <div class="text-center">
+          <div class="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+            </svg>
+          </div>
+          <h3 class="font-bold text-xl mb-2">Atendimento Especial</h3>
+          <p class="text-gray-600 dark:text-gray-400">
+            Equipe dedicada para ajudar você
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Final -->
+  <section class="py-16 bg-gradient-to-r from-primary-500 to-primary-700 text-white">
+    <div class="container-custom text-center">
+      <h2 class="text-3xl md:text-4xl font-bold mb-4">
+        Pronto para a diversão?
+      </h2>
+      <p class="text-xl mb-8 text-primary-100">
+        Explore nossa coleção completa de brinquedos
+      </p>
+      <a href="/loja" class="btn bg-white text-primary-600 hover:bg-gray-100 text-lg px-8 py-3 inline-block">
+        Visitar a Loja
+      </a>
+    </div>
+  </section>
+</MainLayout>

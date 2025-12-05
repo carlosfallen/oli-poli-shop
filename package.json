@@ -1,38 +1,30 @@
 {
   "name": "oli-poli-shop",
-  "private": true,
-  "version": "0.0.0",
   "type": "module",
+  "version": "1.0.0",
+  "private": true,
   "scripts": {
-    "dev": "vite --host",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "db:init": "wrangler d1 execute oli-poli-db --file=./schema.sql --local",
+    "db:migrate": "wrangler d1 execute oli-poli-db --file=./schema.sql --remote",
+    "deploy": "astro build && wrangler pages deploy ./dist"
   },
   "dependencies": {
-    "@studio-freight/lenis": "^1.0.42",
-    "firebase": "^12.6.0",
-    "gsap": "^3.13.0",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "react-icons": "^5.5.0",
-    "react-router-dom": "^7.9.6"
+    "@astrojs/check": "^0.9.4",
+    "@astrojs/cloudflare": "^11.1.0",
+    "@astrojs/solid-js": "^4.4.2",
+    "@astrojs/tailwind": "^5.1.2",
+    "astro": "^4.16.18",
+    "solid-js": "^1.9.3",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.1",
-    "@types/node": "^24.10.1",
-    "@types/react": "^19.2.5",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.1",
-    "autoprefixer": "^10.4.22",
-    "eslint": "^9.39.1",
-    "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-react-refresh": "^0.4.24",
-    "globals": "^16.5.0",
-    "postcss": "^8.5.6",
-    "tailwindcss": "^3.4.17",
-    "typescript": "~5.9.3",
-    "typescript-eslint": "^8.46.4",
-    "vite": "^7.2.4"
+    "@cloudflare/workers-types": "^4.20241218.0",
+    "wrangler": "^3.94.0"
   }
 }

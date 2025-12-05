@@ -38,7 +38,7 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
   try {
     const { DB } = locals.runtime.env;
     const { id } = params;
-    const body = await request.json();
+    const body = await request.json() as any;
     const { name, description, icon } = body;
 
     const now = new Date().toISOString();

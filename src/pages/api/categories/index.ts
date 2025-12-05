@@ -27,7 +27,7 @@ export const GET: APIRoute = async ({ locals }) => {
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const { DB } = locals.runtime.env;
-    const body = await request.json();
+    const body = await request.json() as any;
     const { name, description, icon } = body;
 
     const id = slugify(name);

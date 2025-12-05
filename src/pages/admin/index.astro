@@ -39,7 +39,7 @@ const { results: lowStockProducts } = await DB.prepare(`
       <div class="flex items-center justify-between">
         <div>
           <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Total de Produtos</p>
-          <p class="text-3xl font-bold">{totalProducts.count}</p>
+          <p class="text-3xl font-bold">{totalProducts?.count || 0}</p>
         </div>
         <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
           <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -53,7 +53,7 @@ const { results: lowStockProducts } = await DB.prepare(`
       <div class="flex items-center justify-between">
         <div>
           <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Total de Pedidos</p>
-          <p class="text-3xl font-bold">{totalOrders.count}</p>
+          <p class="text-3xl font-bold">{totalOrders?.count || 0}</p>
         </div>
         <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
           <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -67,7 +67,7 @@ const { results: lowStockProducts } = await DB.prepare(`
       <div class="flex items-center justify-between">
         <div>
           <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Faturamento Total</p>
-          <p class="text-3xl font-bold">{formatPrice(totalRevenue.total || 0)}</p>
+          <p class="text-3xl font-bold">{formatPrice((totalRevenue?.total as number) || 0)}</p>
         </div>
         <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
           <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

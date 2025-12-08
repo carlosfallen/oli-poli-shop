@@ -1,25 +1,55 @@
-import { createSignal, createResource, For, Show } from 'solid-js';
+import { createSignal, For, Show, onMount } from 'solid-js';
 import type { Product, Category } from '../../lib/types';
 import { formatPrice, slugify } from '../../lib/utils';
 
 export default function ProductManager() {
-  const [products, { refetch }] = createResource<Product[]>(fetchProducts);
-  const [categories] = createResource<Category[]>(fetchCategories);
+  console.log('ProductManager: Component initialized');
+  
+  const [products, setProducts] = createSignal<Product[]>([]);
+  const [categories, setCategories] = createSignal<Category[]>([]);
   const [isModalOpen, setIsModalOpen] = createSignal(false);
   const [editingProduct, setEditingProduct] = createSignal<Product | null>(null);
+  const [loading, setLoading] = createSignal(true);
+  
+  onMount(async () => {
+    console.log('ProductManager: onMount started');
+    await loadData();
+  });
 
-  async function fetchProducts(): Promise<Product[]> {
-    const response = await fetch(`${window.location.origin}/api/products`);
-    return response.json() as Promise<Product[]>;
-  }
+  async function loadData() {
+    const origin = window.location.origin;
+    console.log('ProductManager: loadData - origin:', origin);
+    setLoading(true);
 
-  async function fetchCategories(): Promise<Category[]> {
-    const response = await fetch(`${window.location.origin}/api/categories`);
-    return response.json() as Promise<Category[]>;
+    try {
+      // Fetch products
+      const productsUrl = `${origin}/api/products`;
+      console.log('ProductManager: Fetching products from:', productsUrl);
+      const productsResponse = await fetch(productsUrl);
+      console.log('ProductManager: Products response status:', productsResponse.status);
+      const productsData = await productsResponse.json() as Product[];
+      console.log('ProductManager: Products data:', productsData);
+      setProducts(productsData);
+
+      // Fetch categories
+      const categoriesUrl = `${origin}/api/categories`;
+      console.log('ProductManager: Fetching categories from:', categoriesUrl);
+      const categoriesResponse = await fetch(categoriesUrl);
+      console.log('ProductManager: Categories response status:', categoriesResponse.status);
+      const categoriesData = await categoriesResponse.json() as Category[];
+      console.log('ProductManager: Categories data:', categoriesData);
+      setCategories(categoriesData);
+    } catch (error) {
+      console.error('ProductManager: Error loading data:', error);
+    } finally {
+      setLoading(false);
+      console.log('ProductManager: Loading finished');
+    }
   }
 
   async function handleSubmit(e: Event) {
     e.preventDefault();
+    console.log('ProductManager: handleSubmit called');
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
 
@@ -34,9 +64,15 @@ export default function ProductManager() {
       active: formData.get('active') === 'on' ? 1 : 0,
     };
 
+    console.log('ProductManager: Form data:', data);
+
     const editing = editingProduct();
-    const url = editing ? `${window.location.origin}/api/products/${editing.id}` : `${window.location.origin}/api/products`;
+    const url = editing 
+      ? `${window.location.origin}/api/products/${editing.id}` 
+      : `${window.location.origin}/api/products`;
     const method = editing ? 'PUT' : 'POST';
+
+    console.log('ProductManager: Saving to URL:', url, 'Method:', method);
 
     try {
       const response = await fetch(url, {
@@ -45,36 +81,51 @@ export default function ProductManager() {
         body: JSON.stringify(data),
       });
 
+      console.log('ProductManager: Save response status:', response.status);
+
       if (response.ok) {
+        console.log('ProductManager: Save successful, reloading data');
         setIsModalOpen(false);
         setEditingProduct(null);
         form.reset();
-        refetch();
+        await loadData();
+      } else {
+        console.error('ProductManager: Save failed with status:', response.status);
       }
     } catch (error) {
-      console.error('Error saving product:', error);
+      console.error('ProductManager: Error saving product:', error);
       alert('Erro ao salvar produto');
     }
   }
 
   async function handleDelete(id: string) {
+    console.log('ProductManager: handleDelete called for id:', id);
     if (!confirm('Tem certeza que deseja excluir este produto?')) return;
 
     try {
-      const response = await fetch(`${window.location.origin}/api/products/${id}`, {
+      const url = `${window.location.origin}/api/products/${id}`;
+      console.log('ProductManager: Deleting from URL:', url);
+      
+      const response = await fetch(url, {
         method: 'DELETE',
       });
 
+      console.log('ProductManager: Delete response status:', response.status);
+
       if (response.ok) {
-        refetch();
+        console.log('ProductManager: Delete successful, reloading data');
+        await loadData();
+      } else {
+        console.error('ProductManager: Delete failed with status:', response.status);
       }
     } catch (error) {
-      console.error('Error deleting product:', error);
+      console.error('ProductManager: Error deleting product:', error);
       alert('Erro ao excluir produto');
     }
   }
 
   function openModal(product?: Product) {
+    console.log('ProductManager: openModal called with product:', product);
     setEditingProduct(product || null);
     setIsModalOpen(true);
   }
@@ -88,51 +139,60 @@ export default function ProductManager() {
         </button>
       </div>
 
-      <div class="card overflow-hidden">
-        <table class="w-full">
-          <thead class="bg-gray-50 dark:bg-gray-800">
-            <tr>
-              <th class="text-left py-3 px-4 font-semibold">Imagem</th>
-              <th class="text-left py-3 px-4 font-semibold">Nome</th>
-              <th class="text-left py-3 px-4 font-semibold">Categoria</th>
-              <th class="text-left py-3 px-4 font-semibold">Preço</th>
-              <th class="text-left py-3 px-4 font-semibold">Estoque</th>
-              <th class="text-left py-3 px-4 font-semibold">Status</th>
-              <th class="text-left py-3 px-4 font-semibold">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            <For each={products()}>
-              {(product) => (
-                <tr class="border-b border-gray-200 dark:border-gray-700">
-                  <td class="py-3 px-4">
-                    <img src={product.image_url} alt={product.name} class="w-12 h-12 object-cover rounded" />
-                  </td>
-                  <td class="py-3 px-4 font-medium">{product.name}</td>
-                  <td class="py-3 px-4 text-sm">{product.category}</td>
-                  <td class="py-3 px-4 font-bold text-primary-600">{formatPrice(product.price)}</td>
-                  <td class="py-3 px-4">{product.stock}</td>
-                  <td class="py-3 px-4">
-                    <span class={`px-2 py-1 rounded-full text-xs font-medium ${
-                      product.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {product.active ? 'Ativo' : 'Inativo'}
-                    </span>
-                  </td>
-                  <td class="py-3 px-4">
-                    <button onClick={() => openModal(product)} class="text-blue-600 hover:text-blue-700 mr-3">
-                      Editar
-                    </button>
-                    <button onClick={() => handleDelete(product.id)} class="text-red-600 hover:text-red-700">
-                      Excluir
-                    </button>
-                  </td>
-                </tr>
-              )}
-            </For>
-          </tbody>
-        </table>
-      </div>
+      {loading() ? (
+        <div class="text-center py-12">
+          <p>Carregando produtos...</p>
+        </div>
+      ) : (
+        <div class="card overflow-hidden">
+          <table class="w-full">
+            <thead class="bg-gray-50 dark:bg-gray-800">
+              <tr>
+                <th class="text-left py-3 px-4 font-semibold">Imagem</th>
+                <th class="text-left py-3 px-4 font-semibold">Nome</th>
+                <th class="text-left py-3 px-4 font-semibold">Categoria</th>
+                <th class="text-left py-3 px-4 font-semibold">Preço</th>
+                <th class="text-left py-3 px-4 font-semibold">Estoque</th>
+                <th class="text-left py-3 px-4 font-semibold">Status</th>
+                <th class="text-left py-3 px-4 font-semibold">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <For each={products()}>
+                {(product) => {
+                  console.log('ProductManager: Rendering product:', product);
+                  return (
+                    <tr class="border-b border-gray-200 dark:border-gray-700">
+                      <td class="py-3 px-4">
+                        <img src={product.image_url} alt={product.name} class="w-12 h-12 object-cover rounded" />
+                      </td>
+                      <td class="py-3 px-4 font-medium">{product.name}</td>
+                      <td class="py-3 px-4 text-sm">{product.category}</td>
+                      <td class="py-3 px-4 font-bold text-primary-600">{formatPrice(product.price)}</td>
+                      <td class="py-3 px-4">{product.stock}</td>
+                      <td class="py-3 px-4">
+                        <span class={`px-2 py-1 rounded-full text-xs font-medium ${
+                          product.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {product.active ? 'Ativo' : 'Inativo'}
+                        </span>
+                      </td>
+                      <td class="py-3 px-4">
+                        <button onClick={() => openModal(product)} class="text-blue-600 hover:text-blue-700 mr-3">
+                          Editar
+                        </button>
+                        <button onClick={() => handleDelete(product.id)} class="text-red-600 hover:text-red-700">
+                          Excluir
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                }}
+              </For>
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <Show when={isModalOpen()}>
         <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center" onClick={() => setIsModalOpen(false)}>

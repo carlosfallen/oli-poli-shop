@@ -4,53 +4,115 @@ import type { Product } from '../lib/types';
 
 const { DB } = Astro.locals.runtime.env;
 
-// Buscar produtos em destaque
 const { results: featuredProducts } = await DB.prepare(
   'SELECT * FROM products WHERE featured = 1 AND active = 1 LIMIT 6'
 ).all() as { results: Product[] };
 
-// Buscar categorias
 const { results: categories } = await DB.prepare(
   'SELECT * FROM categories LIMIT 5'
 ).all();
+
+const { results: settings } = await DB.prepare(
+  "SELECT value FROM settings WHERE key = 'banner_url' LIMIT 1"
+).all();
+
+const bannerUrl = settings?.[0]?.value || null;
+
 ---
 
 <MainLayout title="Início" description="A melhor loja de brinquedos da região!">
   <!-- Hero Section -->
-  <section class="relative bg-gradient-to-br from-primary-600 via-primary-500 to-primary-700 text-white overflow-hidden">
-    <div class="absolute inset-0 bg-gradient-to-br from-secondary-400/10 to-transparent"></div>
-    <div class="container-custom py-20 md:py-32 relative z-10">
-      <div class="max-w-3xl">
-        <h1 class="text-4xl md:text-6xl font-bold mb-6">
-          Brinquedos que trazem <span class="text-secondary-300">alegria</span>
+  <section class="hero-section relative min-h-screen flex items-center justify-center overflow-hidden">
+    <!-- Background real -->
+    <div
+      class="hero-bg absolute inset-0 bg-cover bg-center"
+      style={`background-image: url('${bannerUrl ?? "/fallback-banner.jpg"}')`}
+    ></div>
+
+    <!-- Overlay escuro leve (opcional) -->
+    <div class="absolute inset-0 bg-black/30"></div>
+
+    <!-- Overlay roxo com blur -->
+    <div class="absolute inset-0 bg-purple-700/40 backdrop-blur-md"></div>
+
+    <div class="floating-shapes absolute inset-0 pointer-events-none">
+      <div class="shape shape-1 absolute w-64 h-64 bg-secondary-400/20 rounded-full blur-3xl"></div>
+      <div class="shape shape-2 absolute w-96 h-96 bg-primary-300/10 rounded-full blur-3xl"></div>
+      <div class="shape shape-3 absolute w-72 h-72 bg-secondary-300/15 rounded-full blur-3xl"></div>
+    </div>
+
+    <div class="container-custom relative z-10 text-center">
+      <div class="hero-content max-w-4xl mx-auto">
+        <h1 class="hero-title text-5xl md:text-7xl lg:text-8xl font-black mb-6 text-white leading-tight">
+          <span class="block opacity-0">Brinquedos que</span>
+          <span class="block text-secondary-300 opacity-0">trazem alegria</span>
         </h1>
-        <p class="text-xl md:text-2xl mb-8 text-white/90">
+        <p class="hero-subtitle text-xl md:text-3xl mb-12 text-white/90 opacity-0">
           Descubra o mundo mágico dos brinquedos na Oli Poli Shop
         </p>
-        <div class="flex flex-wrap gap-4">
-          <a href="/loja" class="btn bg-secondary-400 text-gray-900 hover:bg-secondary-500 text-lg px-8 py-3 font-bold shadow-xl">
+        <div class="hero-buttons flex flex-wrap gap-6 justify-center opacity-0">
+          <a href="/loja" class="btn-hero bg-secondary-400 text-gray-900 hover:bg-secondary-500 text-lg px-10 py-4 font-bold rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300">
             Ver Produtos
           </a>
-          <a href="#sobre" class="btn bg-white/20 backdrop-blur border-2 border-white text-white hover:bg-white/30 text-lg px-8 py-3">
+          <a href="#sobre" class="btn-hero bg-white/10 backdrop-blur-xl border-2 border-white text-white hover:bg-white/20 text-lg px-10 py-4 rounded-2xl transform hover:scale-105 transition-all duration-300">
             Saiba Mais
           </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="scroll-indicator absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white opacity-0">
+      <div class="animate-bounce">
+        <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Section -->
+  <section class="stats-section py-20 bg-white dark:bg-gray-800 relative overflow-hidden">
+    <div class="container-custom">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div class="stat-item text-center opacity-0 transform translate-y-10">
+          <div class="stat-number text-5xl font-black text-primary-600 dark:text-primary-400 mb-2">500+</div>
+          <div class="stat-label text-gray-600 dark:text-gray-300 font-medium">Produtos</div>
+        </div>
+        <div class="stat-item text-center opacity-0 transform translate-y-10">
+          <div class="stat-number text-5xl font-black text-primary-600 dark:text-primary-400 mb-2">10k+</div>
+          <div class="stat-label text-gray-600 dark:text-gray-300 font-medium">Clientes Felizes</div>
+        </div>
+        <div class="stat-item text-center opacity-0 transform translate-y-10">
+          <div class="stat-number text-5xl font-black text-primary-600 dark:text-primary-400 mb-2">4.9</div>
+          <div class="stat-label text-gray-600 dark:text-gray-300 font-medium">Avaliação</div>
+        </div>
+        <div class="stat-item text-center opacity-0 transform translate-y-10">
+          <div class="stat-number text-5xl font-black text-primary-600 dark:text-primary-400 mb-2">24h</div>
+          <div class="stat-label text-gray-600 dark:text-gray-300 font-medium">Entrega Rápida</div>
         </div>
       </div>
     </div>
   </section>
 
   <!-- Categorias -->
-  <section class="py-16 bg-gray-50 dark:bg-gray-900">
+  <section class="categories-section py-24 bg-gray-50 dark:bg-gray-900 relative">
     <div class="container-custom">
-      <h2 class="text-3xl font-bold text-center mb-12">Categorias</h2>
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-        {categories.map((category: any) => (
+      <div class="section-header text-center mb-16 opacity-0">
+        <h2 class="text-4xl md:text-5xl font-black mb-4 dark:text-white">Explore por Categoria</h2>
+        <p class="text-xl text-gray-600 dark:text-gray-300">Encontre o brinquedo perfeito</p>
+      </div>
+      <div class="categories-grid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        {categories.map((category: any, index: number) => (
           <a
             href={`/loja?categoria=${category.id}`}
-            class="card-hover p-6 text-center"
+            class="category-card opacity-0 transform translate-y-10 bg-white dark:bg-gray-800 rounded-3xl p-8 text-center hover:shadow-2xl transition-all duration-500 group relative overflow-hidden"
+            style={`transition-delay: ${index * 100}ms`}
           >
-            <div class="text-4xl mb-3">{category.icon}</div>
-            <h3 class="font-semibold">{category.name}</h3>
+            <div class="absolute inset-0 bg-gradient-to-br from-primary-500/10 to-secondary-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div class="relative z-10">
+              <div class="text-5xl mb-4 transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">{category.icon}</div>
+              <h3 class="font-bold text-lg dark:text-white">{category.name}</h3>
+            </div>
           </a>
         ))}
       </div>
@@ -58,100 +120,109 @@ const { results: categories } = await DB.prepare(
   </section>
 
   <!-- Produtos em Destaque -->
-  <section class="py-16">
+  <section class="products-section py-24 relative overflow-hidden">
     <div class="container-custom">
-      <div class="text-center mb-12">
-        <h2 class="text-3xl font-bold mb-4">Produtos em Destaque</h2>
-        <p class="text-gray-600 dark:text-gray-300">Os brinquedos mais amados pelas crianças</p>
+      <div class="section-header text-center mb-16 opacity-0">
+        <h2 class="text-4xl md:text-5xl font-black mb-4 dark:text-white">Produtos em Destaque</h2>
+        <p class="text-xl text-gray-600 dark:text-gray-300">Os brinquedos mais amados</p>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {featuredProducts.map((product) => (
-          <div class="card-hover overflow-hidden">
-            <div class="aspect-square bg-gray-200 dark:bg-gray-700">
+      <div class="products-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {featuredProducts.map((product, index) => (
+          <div class="product-card opacity-0 transform translate-y-10 bg-white dark:bg-gray-800 rounded-3xl overflow-hidden group hover:shadow-2xl transition-all duration-500" style={`transition-delay: ${index * 100}ms`}>
+            <div class="product-image relative aspect-square overflow-hidden bg-gray-100 dark:bg-gray-700">
               <img
                 src={product.image_url}
                 alt={product.name}
-                class="w-full h-full object-cover"
+                class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
               />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             </div>
             <div class="p-6">
-              <span class="text-sm text-primary-600 dark:text-primary-400 font-medium">{product.category}</span>
-              <h3 class="font-bold text-xl mt-1 mb-2 dark:text-white">{product.name}</h3>
-              <p class="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">
+              <span class="text-sm text-primary-600 dark:text-primary-400 font-bold uppercase tracking-wider">{product.category}</span>
+              <h3 class="font-black text-2xl mt-2 mb-3 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">{product.name}</h3>
+              <p class="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
                 {product.description}
               </p>
               <div class="flex items-center justify-between">
-                <span class="text-2xl font-bold text-primary-600 dark:text-primary-400">
+                <span class="text-3xl font-black text-primary-600 dark:text-primary-400">
                   {new Intl.NumberFormat('pt-BR', {
                     style: 'currency',
                     currency: 'BRL',
                   }).format(product.price)}
                 </span>
-                <a href={`/produto/${product.id}`} class="btn-accent">
-                  Ver Detalhes
+                <a href={`/produto/${product.id}`} class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-bold transform group-hover:scale-105 transition-all duration-300">
+                  Ver
                 </a>
               </div>
             </div>
           </div>
         ))}
       </div>
-      <div class="text-center mt-12">
-        <a href="/loja" class="btn-accent text-lg px-8 py-3">
+      <div class="text-center mt-16 opacity-0 cta-all-products">
+        <a href="/loja" class="inline-block bg-gradient-to-r from-primary-600 to-primary-700 text-white text-lg px-12 py-5 rounded-2xl font-bold shadow-2xl transform hover:scale-105 transition-all duration-300">
           Ver Todos os Produtos
         </a>
       </div>
     </div>
   </section>
 
-  <!-- Sobre a Loja -->
-  <section id="sobre" class="py-16 bg-gray-50 dark:bg-gray-900">
-    <div class="container-custom">
-      <div class="max-w-3xl mx-auto text-center">
-        <h2 class="text-3xl font-bold mb-6 dark:text-white">Sobre a Oli Poli Shop</h2>
-        <p class="text-lg text-gray-600 dark:text-gray-300 mb-8">
+  <!-- Sobre -->
+  <section id="sobre" class="about-section py-24 bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-gray-900 dark:to-gray-800 relative overflow-hidden">
+    <div class="about-shapes absolute inset-0 pointer-events-none opacity-30">
+      <div class="about-shape-1 absolute w-96 h-96 bg-primary-300 rounded-full blur-3xl"></div>
+      <div class="about-shape-2 absolute w-96 h-96 bg-secondary-300 rounded-full blur-3xl"></div>
+    </div>
+    <div class="container-custom relative z-10">
+      <div class="max-w-4xl mx-auto text-center about-content opacity-0">
+        <h2 class="text-4xl md:text-5xl font-black mb-8 dark:text-white">Sobre a Oli Poli Shop</h2>
+        <p class="text-xl md:text-2xl text-gray-700 dark:text-gray-200 leading-relaxed mb-8">
           Somos uma loja especializada em brinquedos de qualidade que proporcionam
-          diversão e aprendizado para crianças de todas as idades. Nossa missão é
-          trazer alegria e momentos especiais para as famílias.
+          diversão e aprendizado para crianças de todas as idades.
+        </p>
+        <p class="text-lg text-gray-600 dark:text-gray-300">
+          Nossa missão é trazer alegria e momentos especiais para as famílias.
         </p>
       </div>
     </div>
   </section>
 
   <!-- Benefícios -->
-  <section class="py-16">
+  <section class="benefits-section py-24">
     <div class="container-custom">
-      <h2 class="text-3xl font-bold text-center mb-12 dark:text-white">Por que escolher a Oli Poli?</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div class="text-center">
-          <div class="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="section-header text-center mb-16 opacity-0">
+        <h2 class="text-4xl md:text-5xl font-black mb-4 dark:text-white">Por que escolher a Oli Poli?</h2>
+      </div>
+      <div class="benefits-grid grid grid-cols-1 md:grid-cols-3 gap-12">
+        <div class="benefit-item text-center opacity-0 transform translate-y-10">
+          <div class="benefit-icon w-24 h-24 bg-gradient-to-br from-primary-500 to-primary-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl transform hover:scale-110 hover:rotate-6 transition-all duration-500">
+            <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
           </div>
-          <h3 class="font-bold text-xl mb-2 dark:text-white">Qualidade Garantida</h3>
-          <p class="text-gray-600 dark:text-gray-300">
+          <h3 class="font-black text-2xl mb-4 dark:text-white">Qualidade Garantida</h3>
+          <p class="text-gray-600 dark:text-gray-300 text-lg">
             Todos os nossos produtos são cuidadosamente selecionados
           </p>
         </div>
-        <div class="text-center">
-          <div class="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="benefit-item text-center opacity-0 transform translate-y-10">
+          <div class="benefit-icon w-24 h-24 bg-gradient-to-br from-primary-500 to-primary-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl transform hover:scale-110 hover:rotate-6 transition-all duration-500">
+            <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
           </div>
-          <h3 class="font-bold text-xl mb-2 dark:text-white">Entrega Rápida</h3>
-          <p class="text-gray-600 dark:text-gray-300">
+          <h3 class="font-black text-2xl mb-4 dark:text-white">Entrega Rápida</h3>
+          <p class="text-gray-600 dark:text-gray-300 text-lg">
             Receba seus produtos com rapidez e segurança
           </p>
         </div>
-        <div class="text-center">
-          <div class="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="benefit-item text-center opacity-0 transform translate-y-10">
+          <div class="benefit-icon w-24 h-24 bg-gradient-to-br from-primary-500 to-primary-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl transform hover:scale-110 hover:rotate-6 transition-all duration-500">
+            <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
             </svg>
           </div>
-          <h3 class="font-bold text-xl mb-2 dark:text-white">Atendimento Especial</h3>
-          <p class="text-gray-600 dark:text-gray-300">
+          <h3 class="font-black text-2xl mb-4 dark:text-white">Atendimento Especial</h3>
+          <p class="text-gray-600 dark:text-gray-300 text-lg">
             Equipe dedicada para ajudar você
           </p>
         </div>
@@ -160,17 +231,334 @@ const { results: categories } = await DB.prepare(
   </section>
 
   <!-- CTA Final -->
-  <section class="py-16 bg-gradient-to-r from-primary-500 to-primary-700 text-white">
-    <div class="container-custom text-center">
-      <h2 class="text-3xl md:text-4xl font-bold mb-4">
-        Pronto para a diversão?
-      </h2>
-      <p class="text-xl mb-8 text-white/90">
-        Explore nossa coleção completa de brinquedos
-      </p>
-      <a href="/loja" class="btn bg-secondary-400 text-gray-900 hover:bg-secondary-500 text-lg px-8 py-3 inline-block font-bold shadow-xl">
-        Visitar a Loja
-      </a>
+  <section class="cta-section py-32 bg-gradient-to-br from-primary-600 via-primary-500 to-primary-700 text-white relative overflow-hidden">
+    <div class="cta-shapes absolute inset-0 pointer-events-none">
+      <div class="cta-shape-1 absolute w-96 h-96 bg-secondary-400/20 rounded-full blur-3xl"></div>
+      <div class="cta-shape-2 absolute w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
+    </div>
+    <div class="container-custom text-center relative z-10">
+      <div class="cta-content opacity-0">
+        <h2 class="text-4xl md:text-6xl font-black mb-6">
+          Pronto para a diversão?
+        </h2>
+        <p class="text-2xl mb-12 text-white/90">
+          Explore nossa coleção completa de brinquedos
+        </p>
+        <a href="/loja" class="inline-block bg-secondary-400 text-gray-900 hover:bg-secondary-500 text-xl px-14 py-6 rounded-2xl font-black shadow-2xl transform hover:scale-110 transition-all duration-300">
+          Visitar a Loja Agora
+        </a>
+      </div>
     </div>
   </section>
 </MainLayout>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const isMobile = window.innerWidth < 768;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!reducedMotion) {
+    const heroTl = gsap.timeline({ defaults: { ease: 'power4.out' } });
+    
+    heroTl
+      .to('.hero-title span:nth-child(1)', { opacity: 1, y: 0, duration: 1, delay: 0.3 })
+      .to('.hero-title span:nth-child(2)', { opacity: 1, y: 0, duration: 1 }, '-=0.7')
+      .to('.hero-subtitle', { opacity: 1, y: 0, duration: 1 }, '-=0.7')
+      .to('.hero-buttons', { opacity: 1, y: 0, duration: 1 }, '-=0.7')
+      .to('.scroll-indicator', { opacity: 0.7, duration: 0.5 }, '-=0.5');
+
+    if (!isMobile) {
+      gsap.to('.shape-1', {
+        x: 100,
+        y: -100,
+        rotation: 45,
+        duration: 20,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut'
+      });
+
+      gsap.to('.shape-2', {
+        x: -80,
+        y: 80,
+        rotation: -30,
+        duration: 25,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut'
+      });
+
+      gsap.to('.shape-3', {
+        x: 60,
+        y: 100,
+        rotation: 60,
+        duration: 22,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut'
+      });
+
+      gsap.to('.hero-bg', {
+        scrollTrigger: {
+          trigger: '.hero-section',
+          start: 'top top',
+          end: 'bottom top',
+          scrub: true
+        },
+        y: 300,
+        ease: 'none'
+      });
+    }
+
+    ScrollTrigger.batch('.stat-item', {
+      onEnter: (elements) => {
+        gsap.to(elements, {
+          opacity: 1,
+          y: 0,
+          stagger: 0.10,
+          duration: 0.6,
+          ease: 'back.out(1.7)',
+          onStart: function() {
+            elements.forEach((el) => {
+              const numberEl = el.querySelector('.stat-number');
+              if (!numberEl) return;
+              
+              const finalNumber = parseInt(numberEl.textContent || '0');
+              const suffix = (numberEl.textContent || '').replace(/[0-9]/g, '');
+              
+              gsap.to({ val: 0 }, {
+                val: finalNumber,
+                duration: 2,
+                ease: 'power2.out',
+                onUpdate: function(this: gsap.core.Tween) {
+                  if (numberEl) {
+                    numberEl.textContent = Math.floor((this.targets()[0] as any).val) + suffix;
+                  }
+                }
+              });
+            });
+          }
+        });
+      },
+      start: 'top 90%'
+    });
+
+    ScrollTrigger.batch('.section-header', {
+      onEnter: (elements) => {
+        gsap.to(elements, {
+          opacity: 1,
+          y: 0,
+          duration: 1,
+          ease: 'power3.out'
+        });
+      },
+      start: 'top 90%'
+    });
+
+    ScrollTrigger.batch('.category-card', {
+      onEnter: (elements) => {
+        gsap.to(elements, {
+          opacity: 1,
+          y: 0,
+          stagger: 0.1,
+          duration: 0.6,
+          ease: 'back.out(1.7)'
+        });
+      },
+      start: 'top 90%'
+    });
+
+    ScrollTrigger.batch('.product-card', {
+      onEnter: (elements) => {
+        gsap.to(elements, {
+          opacity: 1,
+          y: 0,
+          stagger: 0.10,
+          duration: 0.6,
+          ease: 'power3.out'
+        });
+      },
+      start: 'top 90%'
+    });
+
+    gsap.to('.about-content', {
+      scrollTrigger: {
+        trigger: '.about-section',
+        start: 'top 70%',
+      },
+      opacity: 1,
+      y: 0,
+      duration: 1,
+      ease: 'power3.out'
+    });
+
+    if (!isMobile) {
+      gsap.to('.about-shape-1', {
+        scrollTrigger: {
+          trigger: '.about-section',
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 1
+        },
+        x: 200,
+        y: -100,
+        rotation: 90
+      });
+
+      gsap.to('.about-shape-2', {
+        scrollTrigger: {
+          trigger: '.about-section',
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 1
+        },
+        x: -200,
+        y: 100,
+        rotation: -90
+      });
+    }
+
+    ScrollTrigger.batch('.benefit-item', {
+      onEnter: (elements) => {
+        gsap.to(elements, {
+          opacity: 1,
+          y: 0,
+          stagger: 0.2,
+          duration: 0.6,
+          ease: 'back.out(1.7)'
+        });
+      },
+      start: 'top 90%'
+    });
+
+    if (!isMobile) {
+      gsap.to('.cta-shape-1', {
+        scrollTrigger: {
+          trigger: '.cta-section',
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 1
+        },
+        x: -150,
+        y: 150,
+        rotation: 180
+      });
+
+      gsap.to('.cta-shape-2', {
+        scrollTrigger: {
+          trigger: '.cta-section',
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 1
+        },
+        x: 150,
+        y: -150,
+        rotation: -180
+      });
+    }
+
+    gsap.to('.cta-content', {
+      scrollTrigger: {
+        trigger: '.cta-section',
+        start: 'top 70%',
+      },
+      opacity: 1,
+      scale: 1,
+      duration: 1,
+      ease: 'back.out(1.7)'
+    });
+
+    gsap.to('.cta-all-products', {
+      scrollTrigger: {
+        trigger: '.cta-all-products',
+        start: 'top 85%',
+      },
+      opacity: 1,
+      y: 0,
+      duration: 0.6,
+      ease: 'power3.out'
+    });
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = e.currentTarget as HTMLAnchorElement;
+        if (target) {
+          gsap.to(window, {
+            duration: 1,
+            scrollTo: { y: target, offsetY: 80 },
+            ease: 'power3.inOut'
+          });
+        }
+      });
+    });
+  }
+
+  let resizeTimer: number | undefined;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 250);
+  });
+</script>
+
+<style>
+  .hero-section {
+    min-height: 100vh;
+  }
+
+  .hero-overlay {
+    background: radial-gradient(circle at 30% 50%, rgba(255,255,255,0.1) 0%, transparent 50%);
+  }
+
+  .shape-1 { top: 10%; left: 10%; }
+  .shape-2 { bottom: 20%; right: 10%; }
+  .shape-3 { top: 50%; left: 60%; }
+
+  .btn-hero {
+    display: inline-block;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-hero:active {
+    transform: scale(0.95) !important;
+  }
+
+  .product-card {
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+
+  .category-card {
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+
+  .about-shape-1 { top: 10%; right: 5%; }
+  .about-shape-2 { bottom: 10%; left: 5%; }
+
+  .cta-shape-1 { top: 20%; left: 10%; }
+  .cta-shape-2 { bottom: 20%; right: 10%; }
+
+  .cta-content {
+    transform: scale(0.9);
+  }
+
+  @media (max-width: 768px) {
+    .shape, .about-shape-1, .about-shape-2, .cta-shape-1, .cta-shape-2 {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+</style>

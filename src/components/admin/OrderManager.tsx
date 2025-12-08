@@ -1,15 +1,28 @@
-import { createSignal, createResource, For, Show } from 'solid-js';
+import { createSignal, For, Show, onMount } from 'solid-js';
 import type { Order, OrderStatus } from '../../lib/types';
 import { formatPrice, formatDate, getOrderStatusLabel, getOrderStatusColor } from '../../lib/utils';
 
 export default function OrderManager() {
-  const [orders, { refetch }] = createResource<Order[]>(fetchOrders);
+  const [orders, setOrders] = createSignal<Order[]>([]);
   const [selectedOrder, setSelectedOrder] = createSignal<Order | null>(null);
   const [statusFilter, setStatusFilter] = createSignal<OrderStatus | 'all'>('all');
+  const [loading, setLoading] = createSignal(true);
 
-  async function fetchOrders(): Promise<Order[]> {
-    const response = await fetch(`${window.location.origin}/api/orders`);
-    return response.json() as Promise<Order[]>;
+  onMount(async () => {
+    await loadData();
+  });
+
+  async function loadData() {
+    setLoading(true);
+    try {
+      const response = await fetch(`${window.location.origin}/api/orders`);
+      const data = await response.json() as Order[];
+      setOrders(data);
+    } catch (error) {
+      console.error('Error loading orders:', error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function updateOrderStatus(id: string, status: OrderStatus) {
@@ -21,9 +34,8 @@ export default function OrderManager() {
       });
 
       if (response.ok) {
-        refetch();
+        await loadData();
         if (selectedOrder()?.id === id) {
-          const updated = await response.json();
           setSelectedOrder({ ...selectedOrder()!, status });
         }
       }
@@ -64,47 +76,53 @@ export default function OrderManager() {
         ))}
       </div>
 
-      <div class="card overflow-hidden">
-        <table class="w-full">
-          <thead class="bg-gray-50 dark:bg-gray-800">
-            <tr>
-              <th class="text-left py-3 px-4 font-semibold">ID</th>
-              <th class="text-left py-3 px-4 font-semibold">Cliente</th>
-              <th class="text-left py-3 px-4 font-semibold">Data</th>
-              <th class="text-left py-3 px-4 font-semibold">Total</th>
-              <th class="text-left py-3 px-4 font-semibold">Status</th>
-              <th class="text-left py-3 px-4 font-semibold">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            <For each={filteredOrders()}>
-              {(order) => (
-                <tr class="border-b border-gray-200 dark:border-gray-700">
-                  <td class="py-3 px-4 font-mono text-sm">#{order.id.slice(0, 12)}</td>
-                  <td class="py-3 px-4">
-                    <div>
-                      <p class="font-medium">{order.name}</p>
-                      <p class="text-sm text-gray-600 dark:text-gray-400">{order.phone}</p>
-                    </div>
-                  </td>
-                  <td class="py-3 px-4 text-sm">{formatDate(order.created_at)}</td>
-                  <td class="py-3 px-4 font-bold text-primary-600">{formatPrice(order.total)}</td>
-                  <td class="py-3 px-4">
-                    <span class={`px-2 py-1 rounded-full text-xs font-medium ${getOrderStatusColor(order.status)}`}>
-                      {getOrderStatusLabel(order.status)}
-                    </span>
-                  </td>
-                  <td class="py-3 px-4">
-                    <button onClick={() => setSelectedOrder(order)} class="text-blue-600 hover:text-blue-700">
-                      Ver Detalhes
-                    </button>
-                  </td>
-                </tr>
-              )}
-            </For>
-          </tbody>
-        </table>
-      </div>
+      {loading() ? (
+        <div class="text-center py-12">
+          <p>Carregando pedidos...</p>
+        </div>
+      ) : (
+        <div class="card overflow-hidden">
+          <table class="w-full">
+            <thead class="bg-gray-50 dark:bg-gray-800">
+              <tr>
+                <th class="text-left py-3 px-4 font-semibold">ID</th>
+                <th class="text-left py-3 px-4 font-semibold">Cliente</th>
+                <th class="text-left py-3 px-4 font-semibold">Data</th>
+                <th class="text-left py-3 px-4 font-semibold">Total</th>
+                <th class="text-left py-3 px-4 font-semibold">Status</th>
+                <th class="text-left py-3 px-4 font-semibold">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <For each={filteredOrders()}>
+                {(order) => (
+                  <tr class="border-b border-gray-200 dark:border-gray-700">
+                    <td class="py-3 px-4 font-mono text-sm">#{order.id.slice(0, 12)}</td>
+                    <td class="py-3 px-4">
+                      <div>
+                        <p class="font-medium">{order.name}</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">{order.phone}</p>
+                      </div>
+                    </td>
+                    <td class="py-3 px-4 text-sm">{formatDate(order.created_at)}</td>
+                    <td class="py-3 px-4 font-bold text-primary-600">{formatPrice(order.total)}</td>
+                    <td class="py-3 px-4">
+                      <span class={`px-2 py-1 rounded-full text-xs font-medium ${getOrderStatusColor(order.status)}`}>
+                        {getOrderStatusLabel(order.status)}
+                      </span>
+                    </td>
+                    <td class="py-3 px-4">
+                      <button onClick={() => setSelectedOrder(order)} class="text-blue-600 hover:text-blue-700">
+                        Ver Detalhes
+                      </button>
+                    </td>
+                  </tr>
+                )}
+              </For>
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <Show when={selectedOrder()}>
         <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center" onClick={() => setSelectedOrder(null)}>

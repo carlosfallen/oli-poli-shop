@@ -1,14 +1,27 @@
-import { createSignal, createResource, For, Show } from 'solid-js';
+import { createSignal, For, Show, onMount } from 'solid-js';
 import type { Category } from '../../lib/types';
 
 export default function CategoryManager() {
-  const [categories, { refetch }] = createResource<Category[]>(fetchCategories);
+  const [categories, setCategories] = createSignal<Category[]>([]);
   const [isModalOpen, setIsModalOpen] = createSignal(false);
   const [editingCategory, setEditingCategory] = createSignal<Category | null>(null);
+  const [loading, setLoading] = createSignal(true);
 
-  async function fetchCategories(): Promise<Category[]> {
-    const response = await fetch(`${window.location.origin}/api/categories`);
-    return response.json() as Promise<Category[]>;
+  onMount(async () => {
+    await loadData();
+  });
+
+  async function loadData() {
+    setLoading(true);
+    try {
+      const response = await fetch(`${window.location.origin}/api/categories`);
+      const data = await response.json() as Category[];
+      setCategories(data);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleSubmit(e: Event) {
@@ -23,7 +36,9 @@ export default function CategoryManager() {
     };
 
     const editing = editingCategory();
-    const url = editing ? `${window.location.origin}/api/categories/${editing.id}` : `${window.location.origin}/api/categories`;
+    const url = editing 
+      ? `${window.location.origin}/api/categories/${editing.id}` 
+      : `${window.location.origin}/api/categories`;
     const method = editing ? 'PUT' : 'POST';
 
     try {
@@ -37,7 +52,7 @@ export default function CategoryManager() {
         setIsModalOpen(false);
         setEditingCategory(null);
         form.reset();
-        refetch();
+        await loadData();
       }
     } catch (error) {
       console.error('Error saving category:', error);
@@ -54,7 +69,7 @@ export default function CategoryManager() {
       });
 
       if (response.ok) {
-        refetch();
+        await loadData();
       }
     } catch (error) {
       console.error('Error deleting category:', error);
@@ -76,27 +91,33 @@ export default function CategoryManager() {
         </button>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <For each={categories()}>
-          {(category) => (
-            <div class="card p-6">
-              <div class="text-4xl mb-3">{category.icon}</div>
-              <h3 class="font-bold text-xl mb-2">{category.name}</h3>
-              <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                {category.description}
-              </p>
-              <div class="flex gap-2">
-                <button onClick={() => openModal(category)} class="btn-secondary flex-1">
-                  Editar
-                </button>
-                <button onClick={() => handleDelete(category.id)} class="btn-danger flex-1">
-                  Excluir
-                </button>
+      {loading() ? (
+        <div class="text-center py-12">
+          <p>Carregando categorias...</p>
+        </div>
+      ) : (
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <For each={categories()}>
+            {(category) => (
+              <div class="card p-6">
+                <div class="text-4xl mb-3">{category.icon}</div>
+                <h3 class="font-bold text-xl mb-2">{category.name}</h3>
+                <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                  {category.description}
+                </p>
+                <div class="flex gap-2">
+                  <button onClick={() => openModal(category)} class="btn-secondary flex-1">
+                    Editar
+                  </button>
+                  <button onClick={() => handleDelete(category.id)} class="btn-danger flex-1">
+                    Excluir
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
-        </For>
-      </div>
+            )}
+          </For>
+        </div>
+      )}
 
       <Show when={isModalOpen()}>
         <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center" onClick={() => setIsModalOpen(false)}>

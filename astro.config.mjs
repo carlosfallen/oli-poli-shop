@@ -6,12 +6,7 @@ import tailwind from '@astrojs/tailwind';
 export default defineConfig({
   output: 'server',
   adapter: cloudflare({
-    mode: 'directory',
-    routes: {
-      extend: {
-        exclude: [{ pattern: '/api/*' }]
-      }
-    }
+    mode: 'directory'
   }),
   integrations: [
     solidJs(),

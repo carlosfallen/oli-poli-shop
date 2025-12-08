@@ -1,12 +1,12 @@
 name = "oli-poli-shop"
 compatibility_date = "2024-12-01"
-pages_build_output_dir = "./dist"
+pages_build_output_dir = "dist"
 
 # Cloudflare D1 Database
 [[d1_databases]]
 binding = "DB"
 database_name = "oli-poli-db"
-database_id = "your-database-id-here"
+database_id = "efd18d58-47e7-4f60-bf5a-797342bdec14"
 
 # Cloudflare R2 Storage
 [[r2_buckets]]
